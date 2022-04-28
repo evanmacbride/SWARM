@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace SWARM.EF.Models
 {
     [Table("ASP_NET_USERS")]
+    [Index(nameof(UserName), Name = "ASP_NET_USERS_UK1", IsUnique = true)]
     [Index(nameof(NormalizedEmail), Name = "EMAILINDEX")]
     [Index(nameof(NormalizedUserName), Name = "USERNAMEINDEX", IsUnique = true)]
     public partial class AspNetUser
@@ -19,11 +20,13 @@ namespace SWARM.EF.Models
             AspNetUserLogins = new HashSet<AspNetUserLogin>();
             AspNetUserRoles = new HashSet<AspNetUserRole>();
             AspNetUserTokens = new HashSet<AspNetUserToken>();
+            SchoolUsers = new HashSet<SchoolUser>();
         }
 
         [Key]
         [Column("ID")]
         public string Id { get; set; }
+        [Required]
         [Column("USER_NAME")]
         [StringLength(256)]
         public string UserName { get; set; }
@@ -65,5 +68,6 @@ namespace SWARM.EF.Models
         public virtual ICollection<AspNetUserRole> AspNetUserRoles { get; set; }
         [InverseProperty(nameof(AspNetUserToken.User))]
         public virtual ICollection<AspNetUserToken> AspNetUserTokens { get; set; }
+        public virtual ICollection<SchoolUser> SchoolUsers { get; set; }
     }
 }

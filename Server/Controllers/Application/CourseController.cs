@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SWARM.EF.Data;
 using SWARM.EF.Models;
+using SWARM.Server.Controllers.Base;
 using SWARM.Server.Models;
 using SWARM.Shared;
 using SWARM.Shared.DTO;
@@ -16,65 +17,46 @@ using System.Threading.Tasks;
 using Telerik.DataSource;
 using Telerik.DataSource.Extensions;
 
-namespace SWARM.Server.Controllers.Crse
+namespace SWARM.Server.Controllers.Application
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CourseController : Controller
+    public class CourseController : BaseController, iBaseController<Course>
     {
-        protected readonly SWARMOracleContext _context;
-        protected readonly IHttpContextAccessor _httpContextAccessor;
-
-        public CourseController(SWARMOracleContext context, IHttpContextAccessor httpContextAccessor)
+        public CourseController(SWARMOracleContext context,
+                                IHttpContextAccessor httpContextAccessor)
+            : base(context, httpContextAccessor)
         {
-            this._context = context;
-            this._httpContextAccessor = httpContextAccessor;
+
         }
 
         [HttpGet]
-        [Route("GetCourses")]
-        public async Task<IActionResult> GetCourses()
+        [Route("Get")]
+        public async Task<IActionResult> Get()
         {
             List<Course> lstCourses = await _context.Courses.OrderBy(x => x.CourseNo).ToListAsync();
             return Ok(lstCourses);
         }
 
         [HttpGet]
-        [Route("GetCourses/{pCourseNo}")]
-        public async Task<IActionResult> GetCourse(int pCourseNo)
+        [Route("Get/{KeyValue}")]
+        public async Task<IActionResult> Get(int KeyValue)
         {
-            Course itmCourse = await _context.Courses.Where(x => x.CourseNo == pCourseNo).FirstOrDefaultAsync();
+            Course itmCourse = await _context.Courses.Where(x => x.CourseNo == KeyValue).FirstOrDefaultAsync();
             return Ok(itmCourse);
         }
 
         [HttpDelete]
-        [Route("DeleteCourse/{pCourseNo}")]
-        public async Task<IActionResult> DeleteCourse(int pCourseNo)
-        {
-            Course itmCourse = await _context.Courses.Where(x => x.CourseNo == pCourseNo).FirstOrDefaultAsync();
-            _context.Remove(itmCourse);
-            await _context.SaveChangesAsync();
-            return Ok();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CourseDTO _CourseDTO)
+        [Route("Delete/{KeyValue}")]
+        public async Task<IActionResult> Delete(int KeyValue)
         {
             var trans = _context.Database.BeginTransaction();
             try
             {
-                var existCourse = await _context.Courses.Where(x => x.CourseNo == _CourseDTO.CourseNo).FirstOrDefaultAsync();
-
-                existCourse.Cost = _CourseDTO.Cost;
-                existCourse.Description = _CourseDTO.Description;
-                existCourse.Prerequisite = _CourseDTO.Prerequisite;
-                existCourse.PrerequisiteSchoolId = _CourseDTO.PrerequisiteSchoolId;
-                existCourse.SchoolId = _CourseDTO.SchoolId;
-                _context.Update(existCourse);
-                await _context.SaveChangesAsync();
-                trans.Commit();
-
-                return Ok(_CourseDTO.CourseNo);
+                Course itmCourse = await _context.Courses.Where(x => x.CourseNo == KeyValue).FirstOrDefaultAsync();
+                _context.Courses.Remove(itmCourse);
+                await trans.CommitAsync();
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -83,8 +65,74 @@ namespace SWARM.Server.Controllers.Crse
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] Course _Item)
+        {
+            var trans = _context.Database.BeginTransaction();
+            try
+            {
+                var _crse = await _context.Courses.Where(x => x.CourseNo == _Item.CourseNo).FirstOrDefaultAsync();
 
+                if (_crse != null)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Course already exists.");
+                }
 
+                _crse = new Course();
+
+                _crse.Cost = _Item.Cost;
+                _crse.Description = _Item.Description;
+                _crse.Prerequisite = _Item.Prerequisite;
+                _crse.PrerequisiteSchoolId = _Item.PrerequisiteSchoolId;
+                _crse.SchoolId = _Item.SchoolId;
+                _context.Courses.Add(_crse);
+                await _context.SaveChangesAsync();
+                trans.Commit();
+
+                return Ok(_Item.CourseNo);
+            }
+            catch (Exception ex)
+            {
+                trans.Rollback();
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Put([FromBody] Course _Item)
+        {
+            var trans = _context.Database.BeginTransaction();
+            try
+            {
+                var _crse = await _context.Courses.Where(x => x.CourseNo == _Item.CourseNo).FirstOrDefaultAsync();
+
+                if (_crse == null)
+                {
+                    await this.Post(_Item);
+                    return Ok();
+                }
+
+                _crse = new Course();
+
+                _crse.Cost = _Item.Cost;
+                _crse.Description = _Item.Description;
+                _crse.Prerequisite = _Item.Prerequisite;
+                _crse.PrerequisiteSchoolId = _Item.PrerequisiteSchoolId;
+                _crse.SchoolId = _Item.SchoolId;
+                _context.Courses.Update(_crse);
+                await _context.SaveChangesAsync();
+                trans.Commit();
+
+                return Ok(_Item.CourseNo);
+            }
+            catch (Exception ex)
+            {
+                trans.Rollback();
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        /*
         [HttpPost]
         [Route("GetCourses")]
         public async Task<DataEnvelope<CourseDTO>> GetCoursesPost([FromBody] DataSourceRequest gridRequest)
@@ -141,6 +189,7 @@ namespace SWARM.Server.Controllers.Crse
             }
             return dataToReturn;
         }
+        */
 
     }
 }

@@ -11,6 +11,7 @@ using System.Linq;
 using SWARM.Server.Data;
 using SWARM.Server.Models;
 using SWARM.EF.Data;
+using System.Text.Json.Serialization;
 
 namespace SWARM.Server
 {
@@ -48,6 +49,10 @@ namespace SWARM.Server
 
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            // Fix for “A possible object cycle was detected” error found at the following address:
+            // https://gavilan.blog/2021/05/19/fixing-the-error-a-possible-object-cycle-was-detected-in-different-versions-of-asp-net-core/
+            services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

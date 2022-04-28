@@ -35,13 +35,15 @@ namespace SWARM.EF.Data
         public virtual DbSet<Instructor> Instructors { get; set; }
         public virtual DbSet<PersistedGrant> PersistedGrants { get; set; }
         public virtual DbSet<School> Schools { get; set; }
+        public virtual DbSet<SchoolUser> SchoolUsers { get; set; }
         public virtual DbSet<Section> Sections { get; set; }
         public virtual DbSet<Student> Students { get; set; }
         public virtual DbSet<Zipcode> Zipcodes { get; set; }
+        //public object Zipcode { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasDefaultSchema("C##LAB6")
+            modelBuilder.HasDefaultSchema("C##_UD_MACBRIDE")
                 .HasAnnotation("Relational:Collation", "USING_NLS_COMP");
 
             modelBuilder.Entity<AspNetRoleClaim>(entity =>
@@ -414,6 +416,27 @@ namespace SWARM.EF.Data
                 entity.Property(e => e.ModifiedDate).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.SchoolName).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<SchoolUser>(entity =>
+            {
+                entity.HasKey(e => new { e.UserName, e.SchoolId })
+                    .HasName("SCHOOL_USER_PK");
+
+                entity.Property(e => e.SchoolId).HasPrecision(8);
+
+                entity.HasOne(d => d.School)
+                    .WithMany(p => p.SchoolUsers)
+                    .HasForeignKey(d => d.SchoolId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("SCHOOL_USER_FK2");
+
+                entity.HasOne(d => d.UserNameNavigation)
+                    .WithMany(p => p.SchoolUsers)
+                    .HasPrincipalKey(p => p.UserName)
+                    .HasForeignKey(d => d.UserName)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("SCHOOL_USER_FK1");
             });
 
             modelBuilder.Entity<Section>(entity =>

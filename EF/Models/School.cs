@@ -20,6 +20,7 @@ namespace SWARM.EF.Models
             GradeTypes = new HashSet<GradeType>();
             Grades = new HashSet<Grade>();
             Instructors = new HashSet<Instructor>();
+            SchoolUsers = new HashSet<SchoolUser>();
             Sections = new HashSet<Section>();
             Students = new HashSet<Student>();
         }
@@ -58,6 +59,8 @@ namespace SWARM.EF.Models
         public virtual ICollection<Grade> Grades { get; set; }
         [InverseProperty(nameof(Instructor.School))]
         public virtual ICollection<Instructor> Instructors { get; set; }
+        [InverseProperty(nameof(SchoolUser.School))]
+        public virtual ICollection<SchoolUser> SchoolUsers { get; set; }
         [InverseProperty(nameof(Section.School))]
         public virtual ICollection<Section> Sections { get; set; }
         [InverseProperty(nameof(Student.School))]
