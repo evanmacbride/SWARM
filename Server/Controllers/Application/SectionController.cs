@@ -83,7 +83,7 @@ namespace SWARM.Server.Controllers.Application
                 await _context.SaveChangesAsync();
                 trans.Commit();
 
-                return Ok(_Item.SectionId);
+                return Ok(_Item);
             }
             catch (Exception ex)
             {

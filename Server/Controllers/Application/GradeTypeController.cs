@@ -93,7 +93,7 @@ namespace SWARM.Server.Controllers.Application
                 await _context.SaveChangesAsync();
                 trans.Commit();
 
-                return Ok(_Item.GradeTypeCode);
+                return Ok(_Item);
             }
             catch (Exception ex)
             {

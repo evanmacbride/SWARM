@@ -89,7 +89,7 @@ namespace SWARM.Server.Controllers.Application
                 await _context.SaveChangesAsync();
                 trans.Commit();
 
-                return Ok(_Item.CourseNo);
+                return Ok(_Item);
             }
             catch (Exception ex)
             {
@@ -115,6 +115,7 @@ namespace SWARM.Server.Controllers.Application
                 _crse = new Course();
 
                 _crse.Cost = _Item.Cost;
+                _crse.CourseNo = _Item.CourseNo;
                 _crse.Description = _Item.Description;
                 _crse.Prerequisite = _Item.Prerequisite;
                 _crse.PrerequisiteSchoolId = _Item.PrerequisiteSchoolId;
